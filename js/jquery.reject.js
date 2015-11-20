@@ -505,76 +505,78 @@ var _scrollSize = function() {
  */
 
 (function ($) {
-	$.browserTest = function (a, z) {
+	$.browserTest = function (userAgent, z) {
 		var u = 'unknown',
 			x = 'X',
-			m = function (r, h) {
-				for (var i = 0; i < h.length; i = i + 1) {
-					r = r.replace(h[i][0], h[i][1]);
+			normalizeUserAgent = function (replacedEngine, replaceEngine) {
+				for (var i = 0; i < replaceEngine.length; i = i + 1) {
+					replacedEngine = replacedEngine.replace(replaceEngine[i][0], replaceEngine[i][1]);
 				}
 
-				return r;
-			}, c = function (i, a, b, c) {
-				var r = {
-					name: m((a.exec(i) || [u, u])[1], b)
+				return replacedEngine;
+			}, createBrowserInfo = function (userAgent, engineRegEx, nameNormalizationList, versionRegEx) {
+				var browserInfo = {
+					name: normalizeUserAgent((engineRegEx.exec(userAgent) || [u, u])[1], nameNormalizationList)
 				};
 
-				r[r.name] = true;
+				browserInfo[browserInfo.name] = true;
 
-				if (!r.opera) {
-					r.version = (c.exec(i) || [x, x, x, x])[3];
+				if (!browserInfo.opera) {
+					browserInfo.version = (versionRegEx.exec(userAgent) || [x, x, x, x])[3];
 				}
 				else {
-					r.version = window.opera.version();
+					browserInfo.version = window.opera.version();
 				}
 
-				if (/safari/.test(r.name)) {
+				if (/safari/.test(browserInfo.name)) {
 					var safariversion = /(safari)(\/|\s)([a-z0-9\.\+]*?)(\;|dev|rel|\s|$)/;
-					var res = safariversion.exec(i);
+					var res = safariversion.exec(userAgent);
 					if (res && res[3] && res[3] < 400) {
-						r.version = '2.0';
+						browserInfo.version = '2.0';
 					}
 				}
 
-				else if (r.name === 'presto') {
-					r.version = ($.browser.version > 9.27) ? 'futhark' : 'linear_b';
+				else if (browserInfo.name === 'presto') {
+					browserInfo.version = ($.browser.version > 9.27) ? 'futhark' : 'linear_b';
 				}
 
-				if (/msie/.test(r.name) && r.version === x) {
-					var ieVersion = /rv:(\d+\.\d+)/.exec(i);
-					r.version = ieVersion[1];
+				if (/msie/.test(browserInfo.name) && browserInfo.version === x) {
+					var ieVersion = /rv:(\d+\.\d+)/.exec(userAgent);
+					browserInfo.version = ieVersion[1];
 				}
 
-				r.versionNumber = parseFloat(r.version, 10) || 0;
+				browserInfo.versionNumber = parseFloat(browserInfo.version, 10) || 0;
 				var minorStart = 1;
 
-				if (r.versionNumber < 100 && r.versionNumber > 9) {
+				if (browserInfo.versionNumber < 100 && browserInfo.versionNumber > 9) {
 					minorStart = 2;
 				}
 
-				r.versionX = (r.version !== x) ? r.version.substr(0, minorStart) : x;
-				r.className = r.name + r.versionX;
+				browserInfo.versionX = (browserInfo.version !== x) ? browserInfo.version.substr(0, minorStart) : x;
+				browserInfo.className = browserInfo.name + browserInfo.versionX;
 
-				return r;
+				return browserInfo;
 			};
 
-		a = (/Opera|Navigator|Minefield|KHTML|Chrome|CriOS/.test(a) ? m(a, [
-			[/(Firefox|MSIE|KHTML,\slike\sGecko|Konqueror)/, ''],
-			['Chrome Safari', 'Chrome'],
-			['CriOS', 'Chrome'],
-			['KHTML', 'Konqueror'],
-			['Minefield', 'Firefox'],
-			['Navigator', 'Netscape']
-		]) : a).toLowerCase();
+		userAgent = (/Opera|Navigator|Minefield|KHTML|Chrome|CriOS/.test(userAgent) ?
+			normalizeUserAgent(userAgent, [
+				[/(Firefox|MSIE|KHTML,\slike\sGecko|Konqueror)/, ''],
+				[/Chrome.*Edge/, 'Edge'],
+				['Chrome Safari', 'Chrome'],
+				['CriOS', 'Chrome'],
+				['KHTML', 'Konqueror'],
+				['Minefield', 'Firefox'],
+				['Navigator', 'Netscape']
+			]) : userAgent).toLowerCase();
 
-		$.browser = $.extend((!z) ? $.browser : {}, c(a,
-			/(camino|chrome|crios|firefox|netscape|konqueror|lynx|msie|trident|opera|safari)/,
+		$.browser = $.extend((!z) ? $.browser : {}, createBrowserInfo(userAgent,
+			/(edge|camino|chrome|crios|firefox|netscape|konqueror|lynx|msie|trident|opera|safari)/i,
 			[
 				['trident', 'msie']
 			],
-			/(camino|chrome|crios|firefox|netscape|netscape6|opera|version|konqueror|lynx|msie|rv|safari)(:|\/|\s)([a-z0-9\.\+]*?)(\;|dev|rel|\s|$)/));
+			/(edge|camino|chrome|crios|firefox|netscape|netscape6|opera|version|konqueror|lynx|msie|rv|safari)(:|\/|\s)([a-z0-9\.\+]*?)(\;|dev|rel|\s|$)/i));
 
-		$.layout = c(a, /(gecko|konqueror|msie|trident|opera|webkit)/, [
+		$.layout = createBrowserInfo(userAgent, /(gecko|konqueror|msie|trident|opera|webkit)/, [
 			['konqueror', 'khtml'],
 			['msie', 'trident'],
 			['opera', 'presto']
