@@ -126,24 +126,8 @@ $.reject = function(options) {
 		opts.closeESC = false;
 	}
 
-	// This function parses the advanced browser options
-	var browserCheck = function(settings) {
-		// Check 1: Look for 'all' forced setting
-		// Check 2: Browser+major version (optional) (eg. 'firefox','msie','{msie: 6}')
-		// Check 3: Browser+major version (eg. 'firefox3','msie7','chrome4')
-		// Check 4: Rendering engine+version (eg. 'webkit', 'gecko', '{webkit: 537.36}')
-		// Check 5: Operating System (eg. 'win','mac','linux','solaris','iphone')
-		var layout = settings[$.layout.name],
-			browser = settings[$.browser.name];
-		return !!(settings['all']
-			|| (browser && (browser === true || $.browser.versionNumber <= browser))
-			|| settings[$.browser.className]
-			|| (layout && (layout === true || $.layout.versionNumber <= layout))
-			|| settings[$.os.name]);
-	};
-
 	// Determine if we need to display rejection for this browser, or exit
-	if (!browserCheck(opts.reject)) {
+	if (!$.isRejectionRequired(opts.reject)) {
 		// onFail: Optional Callback
 		if ($.isFunction(opts.onFail)) {
 			opts.onFail();
@@ -233,7 +217,7 @@ $.reject = function(options) {
 			// If no info exists for this browser
 			// or if this browser is not suppose to display to this user
 			// based on "allow" flag
-			if (!info || (info['allow'] != undefined && !browserCheck(info['allow']))) {
+			if (!info || (info['allow'] != undefined && !$.isRejectionRequired(info['allow']))) {
 				continue;
 			}
 
@@ -595,3 +579,22 @@ var _scrollSize = function() {
 
 	$.browserTest(navigator.userAgent);
 }(jQuery));
+
+(function()
+{
+	// This function parses the advanced browser options
+	$.isRejectionRequired = function(settings) {
+		// Check 1: Look for 'all' forced setting
+		// Check 2: Browser+major version (optional) (eg. 'firefox','msie','{msie: 6}')
+		// Check 3: Browser+major version (eg. 'firefox3','msie7','chrome4')
+		// Check 4: Rendering engine+version (eg. 'webkit', 'gecko', '{webkit: 537.36}')
+		// Check 5: Operating System (eg. 'win','mac','linux','solaris','iphone')
+		var layout = settings[$.layout.name],
+			browser = settings[$.browser.name];
+		return !!(settings['all']
+			|| (browser && (browser === true || $.browser.versionNumber <= browser))
+			|| settings[$.browser.className]
+			|| (layout && (layout === true || $.layout.versionNumber <= layout))
+			|| settings[$.os.name]);
+	};
+}());
