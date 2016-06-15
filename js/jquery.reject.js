@@ -357,10 +357,10 @@ $.reject = function(options) {
 
 	// Wrapper for inner centered content (div)
 	element.find('#jr_inner').css({
-		minWidth: displayNum*100,
-		maxWidth: displayNum*140,
+		minWidth: displayNum ? displayNum*100 : '',
+		maxWidth: displayNum ? displayNum*140 : '',
 		// min/maxWidth not supported by IE
-		width: $.layout.name == 'trident' ? displayNum*155 : 'auto'
+		width: ($.layout.name == 'trident' && displayNum) ? displayNum*155 : 'auto'
 	});
 
 	element.find('#jr_inner li').css({ // Browser list items (li)
