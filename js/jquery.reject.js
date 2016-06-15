@@ -7,6 +7,10 @@
  * Copyright: Copyright (c) 2009-2014 Steven Bower under dual MIT/GPLv2 license.
  */
 
+/*!
+ * fork address https://github.com/SkReD/jReject
+ */
+
 (function($) {
 $.reject = function(options) {
 	var opts = $.extend(true, {
